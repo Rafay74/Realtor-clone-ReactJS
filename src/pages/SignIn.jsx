@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 import OAuth from './components/OAuth';
+import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router';
 
 function Signin() {
+    const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
@@ -19,6 +23,21 @@ function Signin() {
         }))
     }
 
+    async function handleForm(e) {
+        e.preventDefault()
+        try {
+            const auth = getAuth()
+            const userCredential = await signInWithEmailAndPassword(
+                auth, email, password)
+            if (userCredential.user) {
+                navigate("/")
+            }
+
+        } catch (error) {
+            toast.error("Bad user credentials")
+        }
+    }
+
     return (
         <section>
             <h1 className='text-center font-bold text-3x1 mt-6'>
@@ -32,7 +51,7 @@ function Signin() {
                 </div>
 
                 <div className='w-full md:w-[67%] lg:w-[40%] lg:ml-20'>
-                    <form>
+                    <form onSubmit={handleForm}>
                         <input
                             className='mb-6 w-full px-4 py-2 text-xl- text-gray-700 bg-white border-gray-300 rounded transition ease-in-out'
                             type="email"
