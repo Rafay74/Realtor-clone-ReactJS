@@ -10,26 +10,32 @@ function OAuth() {
     const navigate = useNavigate()
     async function onGoogleCLick() {
         try {
-            const auth = new getAuth();
+            const auth = getAuth();
             const provider = new GoogleAuthProvider();
-            const result = signInWithPopup(auth, provider)
-            const user = result.user
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
 
-            //check for the user
-            const docRef = doc(db, "users", user.uid)
-
-            const docSnap = await getDoc(docRef)
+            // check for the user
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
 
             if (!docSnap.exists()) {
                 await setDoc(docRef, {
                     name: user.displayName,
                     email: user.email,
-                    createdAt: serverTimestamp()
-                })
+                    createdAt: serverTimestamp(),
+                });
             }
-            navigate("/")
+
+            navigate("/");
         } catch (error) {
-            toast.error("Could not authorize with Google")
+            if (error.code === "auth/cancelled-popup-request") {
+                // User cancelled the popup window
+                toast.error("Authentication cancelled");
+            } else {
+                // Other errors
+                toast.error("Could not authorize with Google");
+            }
         }
     }
     return (
